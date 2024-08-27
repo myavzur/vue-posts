@@ -1,12 +1,23 @@
 <template>
-  <button class="btn">
+  <button
+    class="btn"
+    :class="{
+      [`btn_${kind}`]: Boolean(kind)
+    }"
+  >
     <slot></slot>
   </button>
 </template>
 
 <script>
 export default {
-  name: 'custom-button'
+  name: 'custom-button',
+  props: {
+    kind: {
+      type: String,
+      default: 'primary'
+    }
+  }
 }
 </script>
 
@@ -18,5 +29,9 @@ export default {
   border: 1px solid teal;
   border-radius: 5px;
   cursor: pointer;
+}
+.btn_secondary {
+  color: white;
+  border-color: white;
 }
 </style>
