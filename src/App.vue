@@ -19,19 +19,7 @@
       <div v-else>Загружаем посты...</div>
     </main>
 
-    <footer class="pagination">
-      <div
-        v-for="pageNumber in totalPages"
-        :key="pageNumber"
-        class="pagination__number"
-        :class="{
-          pagination__number_active: pageNumber === page
-        }"
-        @click="changePage(pageNumber)"
-      >
-        {{ pageNumber }}
-      </div>
-    </footer>
+    <div ref="observer" class="observer"></div>
   </div>
 </template>
 
@@ -80,20 +68,28 @@ export default {
     async fetchPosts() {
       this.isPostsFetching = true
 
-      setTimeout(async () => {
-        const response = await PostService.getList({
-          page: this.page,
-          limit: this.limit
-        })
+      const response = await PostService.getList({
+        page: this.page,
+        limit: this.limit
+      })
 
-        this.posts = response.data
-        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
+      this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
 
-        this.isPostsFetching = false
-      }, 1000)
+      this.isPostsFetching = false
+
+      this.posts = response.data
     },
-    changePage(pageNumber) {
-      this.page = pageNumber
+    async fetchNextPosts() {
+      this.page += 1
+
+      const response = await PostService.getList({
+        page: this.page,
+        limit: this.limit
+      })
+
+      this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
+
+      this.posts = [...this.posts, ...response.data]
     }
   },
   computed: {
@@ -120,13 +116,23 @@ export default {
       })
     }
   },
-  watch: {
-    page() {
-      this.fetchPosts()
-    }
-  },
   mounted() {
     this.fetchPosts()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isIntersecting = entries[0].isIntersecting
+        const isLastPage = this.page === this.totalPages
+        if (!isIntersecting || isLastPage) return
+        this.fetchNextPosts()
+      },
+      {
+        rootMargin: '0px',
+        threshold: 1.0
+      }
+    )
+
+    observer.observe(this.$refs.observer)
   }
 }
 </script>
@@ -179,5 +185,10 @@ export default {
 
 .pagination__number_active {
   border-color: teal;
+}
+
+.observer {
+  height: 30px;
+  background: red;
 }
 </style>
