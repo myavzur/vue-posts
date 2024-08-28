@@ -5,6 +5,9 @@
       <div class="navbar__links">
         <custom-button @click="$router.push('/')" kind="secondary">Главная</custom-button>
         <custom-button @click="$router.push('/posts')" kind="secondary">Посты</custom-button>
+        <custom-button @click="$router.push('/composition-api')" kind="secondary"
+          >Composition API</custom-button
+        >
       </div>
     </div>
   </div>

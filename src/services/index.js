@@ -1,1 +1,2 @@
-export { default as PostService } from './PostService'
+import postService from './PostService'
+export { postService }

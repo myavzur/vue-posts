@@ -27,25 +27,14 @@
 </template>
 
 <script>
-import PostForm from '@/components/PostForm.vue'
-import PostList from '@/components/PostList.vue'
-import { postService } from '@/services'
+import { usePosts } from '@/hooks/usePosts'
+import useSearchedPosts from '@/hooks/useSearchedPosts'
+import useSortedPosts from '@/hooks/useSortedPosts'
 
 export default {
-  components: {
-    PostList,
-    PostForm
-  },
   data() {
     return {
-      totalPages: 0,
-      page: 1,
-      limit: 10,
-      posts: [],
       dialogVisible: false,
-      isPostsFetching: false,
-      searchQuery: '',
-      selectedSorting: '',
       sortOptions: [
         { value: 'title', name: 'По названию' },
         { value: 'body', name: 'По содержимому' },
@@ -54,73 +43,20 @@ export default {
       ]
     }
   },
-  methods: {
-    showDialog() {
-      this.dialogVisible = true
-    },
-    closeDialog() {
-      this.dialogVisible = false
-    },
-    createPost(post) {
-      this.posts.push(post)
-      this.closeDialog()
-    },
-    removePost(post) {
-      this.posts = this.posts.filter((p) => p.id !== post.id)
-    },
-    async fetchPosts() {
-      this.isPostsFetching = true
+  setup() {
+    const { posts, totalPages, isPostsFetching } = usePosts(10)
+    const { sortedPosts, selectedSorting } = useSortedPosts(posts)
+    const { searchedPosts, searchQuery } = useSearchedPosts(sortedPosts)
 
-      const response = await postService.getList({
-        page: this.page,
-        limit: this.limit
-      })
-
-      this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-
-      this.isPostsFetching = false
-
-      this.posts = response.data
-    },
-    async fetchNextPosts() {
-      this.page += 1
-
-      const response = await postService.getList({
-        page: this.page,
-        limit: this.limit
-      })
-
-      this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-
-      this.posts = [...this.posts, ...response.data]
+    return {
+      posts,
+      totalPages,
+      isPostsFetching,
+      sortedPosts,
+      selectedSorting,
+      searchedPosts,
+      searchQuery
     }
-  },
-  computed: {
-    sortedPosts() {
-      const postsCopy = [...this.posts]
-
-      if (this.selectedSorting === 'id-asc') {
-        return postsCopy.sort((postA, postB) => postA.id - postB.id)
-      }
-
-      if (this.selectedSorting === 'id-desc') {
-        return postsCopy.sort((postA, postB) => postB.id - postA.id)
-      }
-
-      return postsCopy.sort((postA, postB) => {
-        return postA[this.selectedSorting]?.localeCompare(postB[this.selectedSorting])
-      })
-    },
-    sortedAndSearchedPosts() {
-      const searchQuery = this.searchQuery.toLowerCase()
-
-      return this.sortedPosts.filter((post) => {
-        return post.title.toLowerCase().includes(searchQuery)
-      })
-    }
-  },
-  mounted() {
-    this.fetchPosts()
   }
 }
 </script>
