@@ -19,8 +19,11 @@ export default {
 <style scoped>
 .input {
   width: 100%;
-  border: 1px solid teal;
+  border: 1px solid cadetblue;
   border-radius: 5px;
   padding: 10px 15px;
+}
+.input:focus {
+  outline-color: teal;
 }
 </style>

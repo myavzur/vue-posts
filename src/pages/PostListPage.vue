@@ -7,7 +7,12 @@
     <h1 class="header__title">Страница с постами</h1>
 
     <div class="header__controls">
-      <custom-input data-grid-area="search" v-model="searchQuery" placeholder="Название поста" />
+      <custom-input
+        data-grid-area="search"
+        v-model="searchQuery"
+        placeholder="Название поста"
+        v-focus
+      />
       <custom-button data-grid-area="create" @click="showDialog">Создать пост</custom-button>
       <custom-select data-grid-area="select" v-model="sortBy" :options="sortOptions" />
     </div>
@@ -18,7 +23,7 @@
     <div v-else>Загружаем посты...</div>
   </main>
 
-  <div ref="observer" class="observer"></div>
+  <div ref="observer" class="observer" v-intersection="fetchNextPosts"></div>
 </template>
 
 <script>
@@ -116,21 +121,6 @@ export default {
   },
   mounted() {
     this.fetchPosts()
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const isIntersecting = entries[0].isIntersecting
-        const isLastPage = this.page === this.totalPages
-        if (!isIntersecting || isLastPage) return
-        this.fetchNextPosts()
-      },
-      {
-        rootMargin: '0px',
-        threshold: 1.0
-      }
-    )
-
-    observer.observe(this.$refs.observer)
   }
 }
 </script>
@@ -185,7 +175,8 @@ export default {
 }
 
 .observer {
-  height: 30px;
-  background: red;
+  height: 0px;
+  width: 0px;
+  visibility: hidden;
 }
 </style>
